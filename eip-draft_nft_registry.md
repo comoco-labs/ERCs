@@ -1,6 +1,6 @@
 ---
-title: Registry Contract for Cross-Chain NFT Mapping
-description: A universal registry smart contract where an NFT contract owner can register its mapping contract for each secondary blockchain.
+title: Cross-Chain NFT Mapping Registry Contract
+description: A universal registry contract where an NFT contract owner can register its mapping contract for licensing in each secondary blockchain.
 author: Zheng Han <robin@comoco.xyz>, Ming Jiang <ming@comoco.xyz>, Fan Yang <jack@comoco.xyz>
 discussions-to: <URL>
 status: Draft
