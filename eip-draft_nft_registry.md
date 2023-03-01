@@ -97,6 +97,8 @@ contract TokenRegistry {
 
 3. Discuss about whether we should check the address registered is indeed an NFT contract. (Answer: What is an NFT contract is not standardized, as we see ERC1155 and more to come out in addition to ERC721; it is also difficult to verify that for addresses in the secondary blockchain.)
 
+4. Discuss about the need to keep tokens in sync between the original Ethereum NFT contract and the mapping contract on the secondary blockchain.
+
 ## Backwards Compatibility
 
 No backwards compatibility issues found.
