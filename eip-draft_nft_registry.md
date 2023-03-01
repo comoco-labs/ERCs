@@ -87,6 +87,8 @@ contract TokenRegistry {
 
 ## Rationale
 
+(TBD: Key points and short answers as follows)
+
 1. Discuss about using type `string` for network in the structure of Chain instead of `uint256`. (Answer: Not all secondary blockchains have an integer ID for their network, but true for chain ID.)
 
 2. Discuss about using `owner()` (defined in EIP-173) for access control instead of the NFT contract itself. (Answer: There is no way for existing deployed NFT contracts to register sending from the contract itself; in reality, contract owner is usually the operating team of the NFT.)
@@ -99,11 +101,11 @@ No backwards compatibility issues found.
 
 ## Test Cases
 
-Test cases available in the repository: [comoco-labs/ethereum-contracts](https://github.com/comoco-labs/ethereum-contracts)
+Test cases available in the repository: [comoco-labs/nft-registry](https://github.com/comoco-labs/nft-registry)
 
 ## Reference Implementation
 
-Reference implementation available in the repository: [comoco-labs/ethereum-contracts](https://github.com/comoco-labs/ethereum-contracts)
+Reference implementation available in the repository: [comoco-labs/nft-registry](https://github.com/comoco-labs/nft-registry)
 
 ## Security Considerations
 
