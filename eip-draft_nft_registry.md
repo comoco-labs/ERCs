@@ -1,6 +1,6 @@
 ---
 title: Cross-Chain NFT Mapping Registry Contract
-description: A universal registry contract where an NFT contract owner can register its mapping contract for licensing in each secondary blockchain.
+description: A universal registry smart contract where an NFT contract owner can register its mapping contract for each secondary blockchain.
 author: Zheng Han <robin@comoco.xyz>, Ming Jiang <ming@comoco.xyz>, Fan Yang <jack@comoco.xyz>
 discussions-to: <URL>
 status: Draft
@@ -12,49 +12,86 @@ requires: EIP-173
 
 ## Abstract
 
-<!--
-  The Abstract is a multi-sentence (short paragraph) technical summary. This should be a very terse and human-readable version of the specification section. Someone should be able to read only the abstract to get the gist of what this specification does.
+This standard defines a registry where an NFT contract on Ethereum can register its mapping contract for each secondary blockchain, be it L1 or L2.
 
-  TODO: Remove this comment before submitting
--->
+Through this way, developers are able to publish their NFTs on Ethereum while moving sophisticated application like IP licensing and derivative generation onto the secondary blockchain where it is more affordable and scalable.
+
+Only the owner of an NFT contract on Ethereum can modify the mapping information for this contract in the registry. Anyone can query the registry to find out the deputy contract on each secondary blockchain for an Ethereum NFT contract.
 
 ## Motivation
 
-<!--
-  This section is optional.
+This all started from the idea of implementing an IP licensing solution for NFTs. As we know, many NFT projects have generated derivative NFT collections on Ethereum, such as Mutant Ape Yachet Club derived from Bored Ape Yachet Club, and Space Doodles derived from Doodles. However, those collections are only called "derivative" but no actual derivative relations are ever recorded on-chain. We need to extend the NFT contract to add derivative relations as new metadata.
 
-  The motivation section should include a description of any nontrivial problems the EIP solves. It should not describe how the EIP solves those problems, unless it is not immediately obvious. It should not describe why the EIP should be made into a standard, unless it is not immediately obvious.
+Furthermore, if we want to implement a full IP licensing solution, more licensing metadata along with the required enforcing logic will also be needed. For example, an NFT token holder may want to sell a derivative right to the public but doesn't want the derivative token to be tradable; or the holder may want to rent out the token and charge by the use of it counted via oracle. The computation can be even more costly when we consider the fact that new tokens can be derived from multiple tokens and derivatives can have derivatives and so on.
 
-  With a few exceptions, external links are not allowed. If you feel that a particular resource would demonstrate a compelling case for your EIP, then save it as a printer-friendly PDF, put it in the assets folder, and link to that copy.
+Fortunately, many secondary blockchains, be it L1 or L2 to Ethereum, have emerged to be more affordable and scalable making the application logic we need feasible. Therefore, what we decide is to mirror the NFTs from Ethereum to the secondary blockchain and perform all the operations of derivative extension and licensing logic over there.
 
-  TODO: Remove this comment before submitting
--->
+That leads to the idea of this design document, by standardizing a universal registry smart contract to record the mirroring relations. Copycats could appear on secondary blockchains, but the registry is there to tell which ones are the authentic deputy contracts endorsed by the original NFT project on Ethereum.
+
+Once we implement the aforementioned IP licensing solution, it is also straightforward to verify whether any derivative NFT token generated on a secondary blockchain is officially licensed by tokens from some Ethereum NFT collections, by tracing along the derivative relations on the secondary blockchain to the root contracts and check them against the Ethereum NFT contracts in the registry.
 
 ## Specification
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119 and RFC 8174.
+The following shows the complete code of the registry contract.
 
 ```solidity
-interface ITokenRegistry {
+pragma solidity ^0.8.0;
+
+struct Chain {
+    string network;
+    uint256 id;
+}
+
+interface IOwner {
+    function owner() external view returns (address owner);
+}
+
+contract TokenRegistry {
+
+    mapping(address => mapping(string => mapping(uint256 => address))) private _secondaryTokenAddrRegistry;
+
+    event SecondaryTokenAddressChanged(
+        address indexed primaryAddr,
+        Chain indexed secondaryChain,
+        address indexed newSecondaryAddr
+    );
+
+    modifier validAddress(address addr) {
+        require(addr != address(0), "Invalid address");
+        _;
+    }
+
+    modifier onlyContractOwner(address addr) {
+        require(msg.sender == IOwner(addr).owner());
+        _;
+    }
 
     function getSecondaryTokenAddress(
-        address primaryAddr, LibChain.Chain memory secondaryChain
-    ) external view returns (address secondaryAddr);
+        address primaryAddr,
+        Chain memory secondaryChain
+    ) external view validAddress(primaryAddr) returns (address) {
+        return _secondaryTokenAddrRegistry[primaryAddr][secondaryChain.network][secondaryChain.id];
+    }
 
     function setSecondaryTokenAddress(
-        address primaryAddr, LibChain.Chain memory secondaryChain, address newSecondaryAddr
-    ) external;
+        address primaryAddr,
+        Chain memory secondaryChain,
+        address newSecondaryAddr
+    ) external validAddress(primaryAddr) onlyContractOwner(primaryAddr) {
+        _secondaryTokenAddrRegistry[primaryAddr][secondaryChain.network][secondaryChain.id] = newSecondaryAddr;
+        emit SecondaryTokenAddressChanged(primaryAddr, secondaryChain, newSecondaryAddr);
+    }
 
 }
 ```
 
 ## Rationale
 
-1. Explain how the one-way mapping in Ethereum combined with that in the secondary chains can form a complete registry system.
+1. Discuss about using type `string` for network in the structure of Chain instead of `uint256`. (Answer: Not all secondary blockchains have an integer ID for their network, but true for chain ID.)
 
-2. Discuss about the use of `owner()` (defined in EIP-173) for access check to register.
+2. Discuss about using `owner()` (defined in EIP-173) for access control instead of the NFT contract itself. (Answer: There is no way for existing deployed NFT contracts to register sending from the contract itself; in reality, contract owner is usually the operating team of the NFT.)
 
-3. Discuss about whether we should check the address registered is indeed an NFT contract.
+3. Discuss about whether we should check the address registered is indeed an NFT contract. (Answer: What is an NFT contract is not standardized, as we see ERC1155 and more to come out in addition to ERC721; it is also difficult to verify that for addresses in the secondary blockchain.)
 
 ## Backwards Compatibility
 
