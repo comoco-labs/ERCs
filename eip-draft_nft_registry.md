@@ -35,6 +35,8 @@ Once we implement the aforementioned IP licensing solution, it is also straightf
 The following shows the complete code of the registry contract.
 
 ```solidity
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.0;
 
 struct Chain {
