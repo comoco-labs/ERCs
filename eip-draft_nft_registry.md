@@ -7,7 +7,6 @@ status: Draft
 type: Standards Track
 category: ERC
 created: 2023-02-28
-requires: EIP-173
 ---
 
 ## Abstract
@@ -86,6 +85,8 @@ contract TokenRegistry {
 
 }
 ```
+
+(TODO: Show the use of keyless deployment)
 
 ## Rationale
 
